@@ -50,15 +50,15 @@ class ServiceOrderCreateViewModel @Inject constructor(private val repository: Se
     private val _actionResult = MutableSharedFlow<Result<Long>>() // id retornado
     val actionResult: SharedFlow<Result<Long>> = _actionResult.asSharedFlow()
 
-    /* ----------------- Atualizações de campo --------------- */
+    /* ----------------- Atualizações de campo --------------- */
     fun onClientChange(text: String)
         = _uiState.update { it.copy(client = text) }
     fun onEquipmentChange(text: String)
         = _uiState.update { it.copy(equipment = text) }
     fun onDateTimeChange(time: Long)
         = _uiState.update { it.copy(dateTime = time) }
-    fun onServiceTimeChange(min: Int)
-        = _uiState.update { it.copy(serviceTime = min) }
+    fun onServiceTimeChange(min: Double)
+        = _uiState.update { it.copy(serviceTime = min.toInt()) }
     fun onDescriptionChange(text: String)
         = _uiState.update { it.copy(description = text) }
     fun onLaborCostChange(value: Double)
@@ -77,14 +77,14 @@ class ServiceOrderCreateViewModel @Inject constructor(private val repository: Se
         = _uiState.update { it.copy(notes = text) }
     fun onIsInstallmentChange(flag: Boolean)
         = _uiState.update { it.copy(isInstallment = flag, installments = if (flag) 1 else null) }
-    fun onInstallmentsChange(num: Int)
-        = _uiState.update { it.copy(installments = num) }
+    fun onInstallmentsChange(num: Double)
+        = _uiState.update { it.copy(installments = num.toInt()) }
 
-    /* ----------------- Persistência --------------- */
+    /* ----------------- Persistência --------------- */
     fun saveOrder() {
         viewModelScope.launch(Dispatchers.IO) {
             val state = _uiState.value
-            // Cálculo de totalValue (não persiste, apenas mostra)
+            // Cálculo de totalValue (não persiste, apenas mostra)
             val total = state.laborCost + state.partsCost +
                     state.thirdPartyCost + state.generalCost
 
@@ -174,13 +174,13 @@ class ServiceOrderCreateViewModel @Inject constructor(private val repository: Se
         }
     }
 
-    /* ----------------- Exporte de Excel (simplificado) --------------- */
+    /* ----------------- Exporte de Excel (simplificado) --------------- */
     fun exportOrdersToExcel(file: File) {
         viewModelScope.launch(Dispatchers.IO) {
 //            val orders = repository.listByWeek(YearWeek.now()).first() // pega a semana atual
 //            val workbook = XSSFWorkbook()
 //            val sheet = workbook.createSheet("Ordens")
-//            // Cabeçalho
+//            // Cabeçalho
 //            val headerRow = sheet.createRow(0)
 //            listOf(
 //                "ID", "Cliente", "Equipamento", "Data/Hora",

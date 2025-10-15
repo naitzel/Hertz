@@ -15,12 +15,11 @@ data class HertzColors(
     val background: Color,
     val onBackground: Color,
     val surface: Color,
-    val onSurface: Color
 )
 
 object HertzColorPalettes {
     val Default = HertzColors(
-        primary = Color(0xFFc0392b),
+        primary = Color(0xFFd35400),
         onPrimary = Color.White,
         secondary = Color(0xFF27ae60),
         onSecondary = Color.White,
@@ -31,7 +30,6 @@ object HertzColorPalettes {
         background = Color(0xFFecf0f1),
         onBackground = Color.Black,
         surface = Color(0xFF005c6c),
-        onSurface = Color(0xFFFFFFFF),
     )
 }
 
@@ -43,7 +41,8 @@ data class HertzButtonColor(
 data class HertzButtonColors(
     val primary: HertzButtonColor,
     val secondary: HertzButtonColor,
-    val danger: HertzButtonColor
+    val danger: HertzButtonColor,
+    val card: HertzButtonColor,
 )
 
 
@@ -60,6 +59,10 @@ object HertzButtonPalettes {
         danger = HertzButtonColor(
             text = Color(0xFFFFFFFF),
             background = Color(0xFFc0392b)
+        ),
+        card = HertzButtonColor(
+            text = Color(0xFF2c3e50),
+            background = Color(0xFFecf0f1)
         )
     )
 }

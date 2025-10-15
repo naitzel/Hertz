@@ -13,10 +13,10 @@ import androidx.navigation.compose.composable
 import br.com.naitzel.hertz.core.navigation.NavigationDestination
 import br.com.naitzel.hertz.core.viewModels.NavigationViewModel
 import br.com.naitzel.hertz.presentation.ui.components.LoadingComponent
-import br.com.naitzel.hertz.presentation.ui.screens.service_order.create.ServiceOrderCreateScreen
-import br.com.naitzel.hertz.presentation.ui.screens.service_order.list.OrderListScreen
 import br.com.naitzel.hertz.presentation.ui.screens.crashed.CrashedScreen
 import br.com.naitzel.hertz.presentation.ui.screens.home.HomeScreen
+import br.com.naitzel.hertz.presentation.ui.screens.service_order.create.ServiceOrderCreateScreen
+import br.com.naitzel.hertz.presentation.ui.screens.service_order.list.OrderListScreen
 
 /**
  * NavHost principal da aplicação
@@ -62,6 +62,9 @@ fun AppNavigation(
         // Main Screen
         composable(NavigationDestination.ServiceOrderList.route) {
             OrderListScreen(
+                onHome = {
+                    viewModel.navigateToHome()
+                },
                 onNewServiceOrder = {
                     viewModel.navigateToCreate()
                 },
@@ -73,7 +76,9 @@ fun AppNavigation(
 
         composable(NavigationDestination.ServiceOrderCreate.route) {
             ServiceOrderCreateScreen(
-                onNavigateBack = {}
+                onNavigateBack = {
+                    viewModel.navigateToList()
+                }
             )
         }
 

@@ -1,13 +1,17 @@
 package br.com.naitzel.hertz.presentation.ui.screens.service_order.list
 
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Menu
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -15,15 +19,21 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
+import br.com.naitzel.hertz.presentation.ui.theme.LocalColors
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun OrderListScreen(
+    onHome: () -> Unit,
     onNewServiceOrder: () -> Unit,
     onEditServiceOrder: (String) -> Unit,
     viewModel: OrderListViewModel = hiltViewModel()
 ) {
+    val colors = LocalColors.current
+
 //    val budgets by viewModel.allBudgets.observeAsState(emptyList())
 //    var showDeleteDialog by remember { mutableStateOf<String?>(null) }
 //    var filterOption by remember { mutableIntStateOf(0) }
@@ -37,20 +47,30 @@ fun OrderListScreen(
 //        else -> budgets
 //    }
 //
+
+    BackHandler {
+        onHome()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Service Budgets") },
+                title = { Text("Ordens de Serviço") },
+                actions = {
+                    IconButton(onClick = onNewServiceOrder) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = "Nova Ordem",
+                            tint = colors.onPrimary
+                        )
+                    }
+                },
                 colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = MaterialTheme.colorScheme.primaryContainer
+                    containerColor = colors.primary,
+                    titleContentColor = colors.onPrimary
                 )
             )
         },
-        floatingActionButton = {
-            FloatingActionButton(onClick = onNewServiceOrder) {
-                Icon(Icons.Default.Add, "New Budget")
-            }
-        }
     ) { padding ->
         Column(
             modifier = Modifier

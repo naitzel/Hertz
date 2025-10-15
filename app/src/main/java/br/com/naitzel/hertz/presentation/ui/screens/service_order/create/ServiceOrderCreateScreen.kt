@@ -2,6 +2,7 @@ package br.com.naitzel.hertz.presentation.ui.screens.service_order.create
 
 import android.app.DatePickerDialog
 import android.app.TimePickerDialog
+import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -11,23 +12,32 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.imePadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.List
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Checkbox
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -38,9 +48,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import br.com.naitzel.hertz.domain.enums.ServiceOrderStatus
+import br.com.naitzel.hertz.presentation.ui.theme.LocalButtonColors
+import br.com.naitzel.hertz.presentation.ui.theme.LocalColors
+import br.com.naitzel.hertz.presentation.ui.theme.LocalSpacing
 import java.time.Instant
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -55,14 +69,21 @@ fun ServiceOrderCreateScreen(
     viewModel: ServiceOrderCreateViewModel = hiltViewModel()
 ) {
     val uiState by viewModel.uiState.collectAsState()
+
+    val colors = LocalColors.current
+    val spacing = LocalSpacing.current
     val scaffoldState = rememberScrollState()
 
-    // Carrega a ordem quando existe ID
+    BackHandler {
+        onNavigateBack()
+    }
+
+    // Carrega a ordem quando existe ID
     LaunchedEffect(orderId) {
         orderId?.let { viewModel.loadOrder(it) }
     }
 
-    // Escuta resultado da operação
+    // Escuta resultado da operação
     LaunchedEffect(Unit) {
         viewModel.actionResult.collect { result ->
             result.onSuccess { id ->
@@ -81,25 +102,35 @@ fun ServiceOrderCreateScreen(
     Scaffold(
 //        scaffoldState = scaffoldState,
         topBar = {
-            TopAppBar(title = { Text(if (orderId == null) "Nova OS" else "Editar OS") })
-        },
-        floatingActionButton = {
-            FloatingActionButton(onClick = {
-                if (orderId == null) viewModel.saveOrder() else viewModel.updateOrder(
-                    orderId!!
+            TopAppBar(
+                title = { Text(if (orderId == null) "Nova OS" else "Editar OS") },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colors.primary,
+                    titleContentColor = colors.onPrimary
                 )
-            }) {
-                Icon(Icons.Default.Save, contentDescription = "Salvar")
-            }
+            )
         },
+
+//        floatingActionButton = {
+//            FloatingActionButton(onClick = {
+//                if (orderId == null)
+//                    viewModel.saveOrder()
+//                else
+//                    viewModel.updateOrder(orderId)
+//            }) {
+//                Icon(Icons.Default.Save, contentDescription = "Salvar")
+//            }
+//        },
+        modifier = Modifier.imePadding()
     ) { padding ->
         Column(
             modifier = Modifier
-                .padding(padding)
-                .verticalScroll(rememberScrollState())
                 .fillMaxSize()
+                .verticalScroll(rememberScrollState())
+                .padding(padding)
+                .padding(spacing.medium)
         ) {
-            // 1. Cliente
+            // 1. Cliente
             OutlinedTextField(
                 value = uiState.client,
                 onValueChange = viewModel::onClientChange,
@@ -108,7 +139,7 @@ fun ServiceOrderCreateScreen(
             )
             Spacer(Modifier.height(8.dp))
 
-            // 2. Equipamento
+            // 2. Equipamento
             OutlinedTextField(
                 value = uiState.equipment,
                 onValueChange = viewModel::onEquipmentChange,
@@ -117,22 +148,21 @@ fun ServiceOrderCreateScreen(
             )
             Spacer(Modifier.height(8.dp))
 
-            // 3. Data/Hora – usa DatePicker + TimePicker
+            // 3. Data/Hora – usa DatePicker + TimePicker
             DateTimePicker(
                 dateMillis = uiState.dateTime,
                 onDateChange = { new -> viewModel.onDateTimeChange(new) }
             )
             Spacer(Modifier.height(8.dp))
 
-            // 4. Tempo de serviço (minutos)
-//            NumberInput(
-//                value = uiState.serviceTime,
-//                onValueChange = viewModel::onServiceTimeChange,
-//                label = "Tempo de serviço (min)"
-//            )
+            NumberInput(
+                value = uiState.serviceTime.toDouble(),
+                onValueChange = viewModel::onServiceTimeChange,
+                label = "Tempo de serviço (min)"
+            )
             Spacer(Modifier.height(8.dp))
 
-            // 5. Descrição
+            // 5. Descrição
             OutlinedTextField(
                 value = uiState.description,
                 onValueChange = viewModel::onDescriptionChange,
@@ -141,7 +171,6 @@ fun ServiceOrderCreateScreen(
             )
             Spacer(Modifier.height(8.dp))
 
-            // 6. Valores (labor, parts, thirdParty, general)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -159,6 +188,7 @@ fun ServiceOrderCreateScreen(
                     modifier = Modifier.weight(1f)
                 )
             }
+            Spacer(Modifier.height(8.dp))
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
@@ -178,7 +208,7 @@ fun ServiceOrderCreateScreen(
             }
             Spacer(Modifier.height(8.dp))
 
-            // 7. Status – dropdown
+            // 7. Status – dropdown
             DropdownMenuField(
                 options = ServiceOrderStatus.entries,
                 selected = uiState.status,
@@ -187,7 +217,7 @@ fun ServiceOrderCreateScreen(
             )
             Spacer(Modifier.height(8.dp))
 
-            // 8. Emitir NF – checkbox
+            // 8. Emitir NF – checkbox
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                     checked = uiState.emitNF,
@@ -197,16 +227,18 @@ fun ServiceOrderCreateScreen(
             }
             Spacer(Modifier.height(8.dp))
 
-            // 9. Informações adicionais
+            // 9. Informações adicionais
             OutlinedTextField(
                 value = uiState.notes ?: "",
                 onValueChange = viewModel::onNotesChange,
                 label = { Text("Informações adicionais") },
+                minLines = 3,
+                maxLines = 6,
                 modifier = Modifier.fillMaxWidth()
             )
             Spacer(Modifier.height(8.dp))
 
-            // 10. Recebíveis – parcelado ou não
+            // 10. Recebíveis – parcelado ou não
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Checkbox(
                     checked = uiState.isInstallment,
@@ -214,14 +246,32 @@ fun ServiceOrderCreateScreen(
                 )
                 Text("Gerar cobrança parcelada")
             }
-//            if (uiState.isInstallment) {
-//                NumberInput(
-//                    value = uiState.installments ?: 1,
-//                    onValueChange = viewModel::onInstallmentsChange,
-//                    label = "Número de parcelas",
-//                    modifier = Modifier.fillMaxWidth()
-//                )
-//            }
+            if (uiState.isInstallment) {
+                NumberInput(
+                    value = (uiState.installments ?: 1).toDouble(),
+                    onValueChange = viewModel::onInstallmentsChange,
+                    label = "Número de parcelas",
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+
+            Spacer(Modifier.height(18.dp))
+
+            Button(
+                onClick = {},
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = colors.primary,
+                    contentColor = colors.onPrimary
+                )
+            ) {
+                Icon(
+                    imageVector = Icons.Default.Save,
+                    contentDescription = "Lista"
+                )
+                Spacer(Modifier.width(8.dp))
+                Text("Salvar")
+            }
         }
     }
 }
@@ -236,36 +286,48 @@ fun NumberInput(
     OutlinedTextField(
         value = value.toString(),
         onValueChange = { text ->
-            val v = text.replace(",", ".").toDoubleOrNull() ?: 0.0
+            val v = text
+                .replace(",", ".")
+                .toDoubleOrNull() ?: 0.0
             onValueChange(v)
         },
         label = { Text(label) },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
         modifier = modifier
     )
 }
 
 @Composable
-fun <T> DropdownMenuField(options: List<T>, selected: T, onSelect: (T) -> Unit,
-                          label: String) where T : Enum<*> {
+fun DropdownMenuField(
+    options: List<ServiceOrderStatus>,
+    selected: ServiceOrderStatus,
+    onSelect: (ServiceOrderStatus) -> Unit,
+    label: String
+) {
     var expanded by remember { mutableStateOf(false) }
     Box(modifier = Modifier.fillMaxWidth()) {
         OutlinedTextField(
-            value = selected.name,
+            value = selected.description,
             onValueChange = {},
             readOnly = true,
             label = { Text(label) },
             trailingIcon = {
-                Icon(Icons.Default.ArrowDropDown, contentDescription = null,
-                    modifier = Modifier.clickable { expanded = true })
+                Icon(
+                    Icons.Default.ArrowDropDown, contentDescription = null,
+                    modifier = Modifier.clickable { expanded = true }
+                )
             },
             modifier = Modifier.fillMaxWidth()
         )
         DropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
             options.forEach { opt ->
-                DropdownMenuItem(onClick = {
-                    onSelect(opt)
-                    expanded = false
-                }, text = { Text(opt.name) })
+                DropdownMenuItem(
+                    onClick = {
+                        onSelect(opt)
+                        expanded = false
+                    },
+                    text = { Text(opt.description) }
+                )
             }
         }
     }
@@ -297,7 +359,7 @@ fun DateTimePicker(dateMillis: Long, onDateChange: (Long) -> Unit) {
     )
 
     if (showDialog) {
-        // Combina DatePicker + TimePicker
+        // Combina DatePicker + TimePicker
         val picker = DatePickerDialog(
             context,
             { _, year, month, day ->

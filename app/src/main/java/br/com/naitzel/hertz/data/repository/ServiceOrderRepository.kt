@@ -1,6 +1,7 @@
 package br.com.naitzel.hertz.data.repository
 
 import br.com.naitzel.hertz.data.local.dao.ServiceOrderDao
+import br.com.naitzel.hertz.data.local.entity.ServiceOrderEntity
 import br.com.naitzel.hertz.data.mapper.toDomain
 import br.com.naitzel.hertz.data.mapper.toEntity
 import br.com.naitzel.hertz.domain.enums.ServiceOrderStatus
@@ -19,6 +20,12 @@ class ServiceOrderRepository(private val dao: ServiceOrderDao) {
 
     suspend fun update(order: ServiceOrderModel) =
         dao.update(order.toEntity())
+
+    suspend fun insert(order: ServiceOrderEntity) : Long =
+        dao.insert(order)
+
+    suspend fun update(order: ServiceOrderEntity) =
+        dao.update(order)
 
     suspend fun delete(order: ServiceOrderModel) =
         dao.delete(order.toEntity())
